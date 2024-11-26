@@ -1,153 +1,3 @@
-# import numpy as np
-# import torch
-# from sklearn.preprocessing import MinMaxScaler
-# from torch.utils.data import DataLoader, Dataset
-# from scipy.stats import truncnorm, norm
-#
-# # 截断正态分布生成函数
-# def truncated_normal_generator(mean, std_dev, lower, upper, size):
-#     a, b = (lower - mean) / std_dev, (upper - mean) / std_dev
-#     dist = truncnorm(a, b, loc=mean, scale=std_dev)
-#     return dist.rvs(size)
-#
-# # 生成二维噪声数据
-# def generate_data(mean, std_dev, lower, upper, timesteps, num_samples):
-#     x_noise = truncated_normal_generator(mean[0], std_dev[0], lower[0], upper[0], num_samples)
-#     y_noise = truncated_normal_generator(mean[1], std_dev[1], lower[1], upper[1], num_samples)
-#     data = np.array([x_noise, y_noise]).T  # 形状: (num_samples, 2)
-#     return data
-#
-# # 参数设置
-# mean = [0, 0]
-# std_dev = [0.1, 0.1]
-# lower = [-1, -1]
-# upper = [1, 1]
-# timesteps = 10  # 每个样本的时间步
-# num_samples = 1000  # 总样本数
-#
-# # 生成数据
-# data = generate_data(mean, std_dev, lower, upper, timesteps, num_samples)
-#
-# # 数据归一化
-# scaler = MinMaxScaler(feature_range=(0, 1))
-# scaled_data = scaler.fit_transform(data)
-# # 创建时间序列数据
-# def create_time_series(data, timesteps):
-#     X, y = [], []
-#     for i in range(len(data) - timesteps):
-#         X.append(data[i:i+timesteps])
-#         y.append(data[i+timesteps])
-#     return np.array(X), np.array(y)
-#
-# # 构建时间序列
-# X, y = create_time_series(scaled_data, timesteps)
-#
-# # 划分训练集和测试集
-# train_size = int(len(X) * 0.8)
-# X_train, X_test = X[:train_size], X[train_size:]
-# y_train, y_test = y[:train_size], y[train_size:]
-#
-# # 转换为 PyTorch 张量
-# X_train_tensor = torch.tensor(X_train, dtype=torch.float32)
-# y_train_tensor = torch.tensor(y_train, dtype=torch.float32)
-# X_test_tensor = torch.tensor(X_test, dtype=torch.float32)
-# y_test_tensor = torch.tensor(y_test, dtype=torch.float32)
-#
-# # 创建 PyTorch 数据集
-# class TimeSeriesDataset(Dataset):
-#     def __init__(self, X, y):
-#         self.X = X
-#         self.y = y
-#
-#     def __len__(self):
-#         return len(self.X)
-#
-#     def __getitem__(self, idx):
-#         return self.X[idx], self.y[idx]
-#
-# # 构造 DataLoader
-# train_dataset = TimeSeriesDataset(X_train_tensor, y_train_tensor)
-# test_dataset = TimeSeriesDataset(X_test_tensor, y_test_tensor)
-#
-# train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
-# test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
-# import torch.nn as nn
-#
-# # 定义 LSTM 模型
-# class LSTMModel(nn.Module):
-#     def __init__(self, input_size, hidden_size, output_size, num_layers=1):
-#         super(LSTMModel, self).__init__()
-#         self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
-#         self.fc = nn.Linear(hidden_size, output_size)
-#
-#     def forward(self, x):
-#         out, _ = self.lstm(x)  # 输出形状: (batch_size, seq_len, hidden_size)
-#         out = self.fc(out[:, -1, :])  # 取最后一个时间步的输出
-#         return out
-#
-# # 初始化模型
-# input_size = 2  # 噪声的二维特征
-# hidden_size = 64
-# output_size = 2
-# num_layers = 2
-#
-# model = LSTMModel(input_size, hidden_size, output_size, num_layers)
-# import torch.optim as optim
-#
-# # 定义损失函数和优化器
-# criterion = nn.MSELoss()
-# optimizer = optim.Adam(model.parameters(), lr=0.001)
-#
-# # 训练函数
-# def train_model(model, train_loader, criterion, optimizer, num_epochs):
-#     model.train()
-#     for epoch in range(num_epochs):
-#         total_loss = 0
-#         for X_batch, y_batch in train_loader:
-#             # 前向传播
-#             outputs = model(X_batch)
-#             loss = criterion(outputs, y_batch)
-#
-#             # 反向传播
-#             optimizer.zero_grad()
-#             loss.backward()
-#             optimizer.step()
-#
-#             total_loss += loss.item()
-#         print(f"Epoch [{epoch+1}/{num_epochs}], Loss: {total_loss / len(train_loader):.4f}")
-#
-# # 测试函数
-# def evaluate_model(model, test_loader):
-#     model.eval()
-#     predictions, actuals = [], []
-#     with torch.no_grad():
-#         for X_batch, y_batch in test_loader:
-#             outputs = model(X_batch)
-#             predictions.append(outputs.numpy())
-#             actuals.append(y_batch.numpy())
-#     return np.vstack(predictions), np.vstack(actuals)
-# # 训练模型
-# num_epochs = 10
-# train_model(model, train_loader, criterion, optimizer, num_epochs)
-#
-# # 在测试集上预测
-# y_pred, y_true = evaluate_model(model, test_loader)
-# print(f"测试集 loss 的值为{np.mean((y_true - y_pred) ** 2)}")
-# # 反归一化预测值和真实值
-# y_pred_rescaled = scaler.inverse_transform(y_pred)
-# y_true_rescaled = scaler.inverse_transform(y_true)
-#
-# # 可视化结果
-# import matplotlib.pyplot as plt
-#
-# plt.figure(figsize=(12, 6))
-# plt.plot(y_true_rescaled[:100, 0], label='True X (Noise)')
-# plt.plot(y_pred_rescaled[:100, 0], label='Predicted X (Noise)')
-# plt.plot(y_true_rescaled[:100, 1], label='True Y (Noise)')
-# plt.plot(y_pred_rescaled[:100, 1], label='Predicted Y (Noise)')
-# plt.legend()
-# plt.title("LSTM Noise Prediction (PyTorch)")
-# plt.show()
 from collections import deque
 import numpy as np
 import torch
@@ -157,6 +7,7 @@ from scipy.stats import truncnorm
 import torch.nn as nn
 import torch.optim as optim
 import matplotlib.pyplot as plt
+import joblib
 
 
 class LSTMNoisePredictor:
@@ -181,6 +32,7 @@ class LSTMNoisePredictor:
     - evaluate: 评估LSTM模型在测试数据上的性能。
     - plot_results: 绘制真实值和预测值的对比图。
     """
+
     def __init__(self, noise_generator, timesteps, num_samples, input_size, hidden_size, output_size, num_layers):
         self.noise_generator = noise_generator
         self.timesteps = timesteps
@@ -224,13 +76,15 @@ class LSTMNoisePredictor:
     def _create_time_series(self, data):
         X, y = [], []
         for i in range(len(data) - self.timesteps):
-            X.append(data[i:i+self.timesteps])
-            y.append(data[i+self.timesteps])
+            X.append(data[i:i + self.timesteps])
+            y.append(data[i + self.timesteps])
         return np.array(X), np.array(y)
 
     def _prepare_data(self):
         data = self._generate_data()
         scaled_data = self.scaler.fit_transform(data)
+        # 保存 scaler
+        joblib.dump(self.scaler, 'scaler.pkl')
 
         X, y = self._create_time_series(scaled_data)
         train_size = int(len(X) * 0.8)
@@ -263,7 +117,7 @@ class LSTMNoisePredictor:
                 self.optimizer.step()
 
                 total_loss += loss.item()
-            print(f"Epoch [{epoch+1}/{num_epochs}], Loss: {total_loss / len(self.train_loader):.4f}")
+            print(f"Epoch [{epoch + 1}/{num_epochs}], Loss: {total_loss / len(self.train_loader):.5f}")
 
     def evaluate(self):
         self.model.eval()
@@ -282,14 +136,23 @@ class LSTMNoisePredictor:
         y_true_rescaled = self.scaler.inverse_transform(y_true)
         return y_pred_rescaled, y_true_rescaled
 
-    def plot_results(self, y_pred_rescaled, y_true_rescaled, num_points=100):
-        plt.figure(figsize=(12, 6))
-        plt.plot(y_true_rescaled[:num_points, 0], label='True X (Noise)')
-        plt.plot(y_pred_rescaled[:num_points, 0], label='Predicted X (Noise)')
-        plt.plot(y_true_rescaled[:num_points, 1], label='True Y (Noise)')
-        plt.plot(y_pred_rescaled[:num_points, 1], label='Predicted Y (Noise)')
-        plt.legend()
-        plt.title("LSTM Noise Prediction (PyTorch)")
+    @staticmethod
+    def plot_results(y_pred_rescaled, y_true_rescaled, num_points=100):
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(24, 12))  # 创建一个包含两个子图的窗口
+
+        # 第一个子图显示X轴的数据
+        ax1.plot(y_true_rescaled[:num_points, 0], label='True X (Noise)')
+        ax1.plot(y_pred_rescaled[:num_points, 0], label='Predicted X (Noise)')
+        ax1.set_title('X-axis Noise Prediction')
+        ax1.legend()
+
+        # 第二个子图显示Y轴的数据
+        ax2.plot(y_true_rescaled[:num_points, 1], label='True Y (Noise)')
+        ax2.plot(y_pred_rescaled[:num_points, 1], label='Predicted Y (Noise)')
+        ax2.set_title('Y-axis Noise Prediction')
+        ax2.legend()
+
+        plt.tight_layout()  # 调整子图间距
         plt.show()
 
     def predict_next_noise(self, history):
@@ -338,26 +201,18 @@ class TimeSeriesDataset(Dataset):
         return self.X[idx], self.y[idx]
 
 
-# 噪声生成器
-noise_generator = LSTMNoisePredictor.truncated_normal_generator(mean=[0, 0], std_dev=[0.1, 0.1], lower=[-1, -1], upper=[1, 1])
-# 噪声预测器
-predictor = LSTMNoisePredictor(noise_generator=noise_generator, timesteps=10, num_samples=100000,
-                                input_size=2, hidden_size=64, output_size=2, num_layers=2)
-predictor.train(num_epochs=10)
-y_pred_rescaled, y_true_rescaled = predictor.evaluate()
-# predictor.plot_results(y_pred_rescaled, y_true_rescaled)
+if __name__ == '__main__':
+    # 噪声生成器
+    noise_generator = LSTMNoisePredictor.truncated_normal_generator(mean=[0, 0], std_dev=[0.1, 0.1], lower=[-1, -1],
+                                                                    upper=[1, 1])
+    # 噪声预测器
+    predictor = LSTMNoisePredictor(noise_generator=noise_generator, timesteps=10, num_samples=50000,
+                                   input_size=2, hidden_size=128, output_size=2, num_layers=3)
+    predictor.train(num_epochs=5000)
+    y_pred_rescaled, y_true_rescaled = predictor.evaluate()
+    LSTMNoisePredictor.plot_results(y_pred_rescaled, y_true_rescaled)
+    # 保存模型权重
+    torch.save(predictor.model.state_dict(), 'predictor_model.pth')
+    # 保存优化器状态
+    torch.save(predictor.optimizer.state_dict(), 'optimizer_state.pth')
 
-pre = []
-true = []
-noise = np.array([next(noise_generator) for _ in range(10)])
-for _ in range(100):
-    predicted = predictor.predict_next_noise(noise)
-    print("预测的下一个噪声值为", predicted)
-    pre.append(predicted)
-    noise = deque(noise)
-    noise.popleft()
-    noise.append(next(noise_generator))
-    noise = np.array(noise)
-    print("实际的下一个噪声值为", noise[-1])
-    true.append(noise[-1])
-predictor.plot_results(np.array(pre), np.array(true), num_points=100)
