@@ -148,6 +148,7 @@
 # plt.legend()
 # plt.title("LSTM Noise Prediction (PyTorch)")
 # plt.show()
+from collections import deque
 import numpy as np
 import torch
 from sklearn.preprocessing import MinMaxScaler
@@ -163,10 +164,7 @@ class LSTMNoisePredictor:
     LSTMNoisePredictor 是一个基于LSTM模型的预测器，用于预测时间序列数据中的噪声信号。
 
     参数:
-    - mean: 噪声信号的均值。
-    - std_dev: 噪声信号的标准差。
-    - lower: 噪声信号的下界。
-    - upper: 噪声信号的上界。
+    - noise_generator: 噪声生成器
     - timesteps: 时间序列中的时间步长数。
     - num_samples: 生成数据的样本数量。
     - input_size: LSTM模型的输入特征数量。
@@ -175,7 +173,7 @@ class LSTMNoisePredictor:
     - num_layers: LSTM模型中的层数。
 
     方法:
-    - _truncated_normal_generator: 生成截断正态分布的数据。
+    - truncated_normal_generator: 生成截断正态分布的数据。
     - _generate_data: 生成时间序列数据。
     - _create_time_series: 将数据转换为时间序列格式。
     - _prepare_data: 预处理数据，包括归一化和划分训练/测试集。
@@ -183,11 +181,8 @@ class LSTMNoisePredictor:
     - evaluate: 评估LSTM模型在测试数据上的性能。
     - plot_results: 绘制真实值和预测值的对比图。
     """
-    def __init__(self, mean, std_dev, lower, upper, timesteps, num_samples, input_size, hidden_size, output_size, num_layers):
-        self.mean = mean
-        self.std_dev = std_dev
-        self.lower = lower
-        self.upper = upper
+    def __init__(self, noise_generator, timesteps, num_samples, input_size, hidden_size, output_size, num_layers):
+        self.noise_generator = noise_generator
         self.timesteps = timesteps
         self.num_samples = num_samples
 
@@ -200,7 +195,8 @@ class LSTMNoisePredictor:
         self.criterion = nn.MSELoss()
         self.optimizer = optim.Adam(self.model.parameters(), lr=0.001)
 
-    def _truncated_normal_generator(self, mean, std_dev, lower, upper):
+    @staticmethod
+    def truncated_normal_generator(mean, std_dev, lower, upper):
         """
         创建一个生成二维截断高斯分布随机样本的生成器
         :param mean: 均值 μ，形状为 (2,) 的数组
@@ -222,8 +218,7 @@ class LSTMNoisePredictor:
             yield np.array([dist_x.rvs(), dist_y.rvs()])
 
     def _generate_data(self):
-        sample_generator = self._truncated_normal_generator(self.mean, self.std_dev, self.lower, self.upper)
-        samples = np.array([next(sample_generator) for _ in range(self.num_samples)])
+        samples = np.array([next(self.noise_generator) for _ in range(self.num_samples)])
         return samples
 
     def _create_time_series(self, data):
@@ -297,40 +292,27 @@ class LSTMNoisePredictor:
         plt.title("LSTM Noise Prediction (PyTorch)")
         plt.show()
 
-    def get_next_noise_prediction(self, latest_data_point):
+    def predict_next_noise(self, history):
         """
-        获取下一个时刻的真实噪声值和预测噪声值。
-
-        参数:
-        - latest_data_point: 最新的数据点，用于预测下一个时间点的噪声值。
-
-        返回:
-        - true_next_noise: 下一个时刻的真实噪声值。
-        - predicted_next_noise: 下一个时刻的预测噪声值。
+        根据历史噪声预测下一个时刻的噪声值
+        :param history: 最近 timesteps 个噪声值，形状为 (timesteps, input_size)
+        :return: 预测的下一个噪声值，形状为 (output_size,)
         """
-        # 预处理最新的数据点以匹配模型输入格式
-        latest_data_point_scaled = self.scaler.transform(latest_data_point.reshape(1, -1))
-        latest_data_point_tensor = torch.tensor(latest_data_point_scaled, dtype=torch.float32).unsqueeze(0)  # 增加批次维度
+        self.model.eval()  # 切换到评估模式
+        if len(history) != self.timesteps:
+            raise ValueError(f"历史噪声长度必须为 {self.timesteps}，但收到 {len(history)}")
 
-        # 使用模型预测下一个时间点的噪声值
-        self.model.eval()
+        # 将历史数据归一化，并转换为 PyTorch 张量
+        history_scaled = self.scaler.transform(history)  # 归一化
+        history_tensor = torch.tensor(history_scaled, dtype=torch.float32).unsqueeze(0)  # 添加 batch 维度
+
         with torch.no_grad():
-            predicted_next_noise_tensor = self.model(latest_data_point_tensor)
-            predicted_next_noise = predicted_next_noise_tensor.numpy().flatten()
-
-        # 获取下一个时刻的真实噪声值
-        # 注意：这里假设latest_data_point已经是真实噪声值，因此不需要额外的转换
-        true_next_noise = latest_data_point[-1]  # 假设latest_data_point的最后一个元素是下一个时间点的真实噪声值
+            predicted_scaled = self.model(history_tensor).squeeze(0).numpy()  # 模型输出
 
         # 反归一化预测值
-        predicted_next_noise_rescaled = self.scaler.inverse_transform(predicted_next_noise.reshape(1, -1)).flatten()
+        predicted_noise = self.scaler.inverse_transform(predicted_scaled.reshape(1, -1))
+        return predicted_noise.squeeze(0)
 
-        return true_next_noise, predicted_next_noise_rescaled
-
-
-# 示例使用：
-# 假设我们有一个LSTMNoisePredictor实例叫做predictor，并且我们有最新的数据点latest_data_point
-# true_noise, pred_noise = predictor.get_next_noise_prediction(latest_data_point)
 
 class LSTMModel(nn.Module):
     def __init__(self, input_size, hidden_size, output_size, num_layers=1):
@@ -343,6 +325,7 @@ class LSTMModel(nn.Module):
         out = self.fc(out[:, -1, :])  # 取最后一个时间步的输出
         return out
 
+
 class TimeSeriesDataset(Dataset):
     def __init__(self, X, y):
         self.X = X
@@ -354,13 +337,27 @@ class TimeSeriesDataset(Dataset):
     def __getitem__(self, idx):
         return self.X[idx], self.y[idx]
 
-# 示例使用
-predictor = LSTMNoisePredictor(mean=[0, 0], std_dev=[0.1, 0.1], lower=[-1, -1], upper=[1, 1],
-                                timesteps=10, num_samples=1000,
-                                input_size=2, hidden_size=64, output_size=2, num_layers=2)
 
+# 噪声生成器
+noise_generator = LSTMNoisePredictor.truncated_normal_generator(mean=[0, 0], std_dev=[0.1, 0.1], lower=[-1, -1], upper=[1, 1])
+# 噪声预测器
+predictor = LSTMNoisePredictor(noise_generator=noise_generator, timesteps=10, num_samples=100000,
+                                input_size=2, hidden_size=64, output_size=2, num_layers=2)
 predictor.train(num_epochs=10)
 y_pred_rescaled, y_true_rescaled = predictor.evaluate()
-predictor.plot_results(y_pred_rescaled, y_true_rescaled)
-predictor._
-predictor.model()
+# predictor.plot_results(y_pred_rescaled, y_true_rescaled)
+
+pre = []
+true = []
+noise = np.array([next(noise_generator) for _ in range(10)])
+for _ in range(100):
+    predicted = predictor.predict_next_noise(noise)
+    print("预测的下一个噪声值为", predicted)
+    pre.append(predicted)
+    noise = deque(noise)
+    noise.popleft()
+    noise.append(next(noise_generator))
+    noise = np.array(noise)
+    print("实际的下一个噪声值为", noise[-1])
+    true.append(noise[-1])
+predictor.plot_results(np.array(pre), np.array(true), num_points=100)
