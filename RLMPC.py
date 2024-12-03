@@ -9,7 +9,7 @@ import joblib, torch
 
 
 class ControlOptimizationWithoutPrediction:
-    def __init__(self, T, StateBound, DecisionBound, NoiseGenerator):
+    def __init__(self, T, StateBound, DecisionBound):
         self.T = T
         self.StateBound = StateBound
         self.DecisionBound = DecisionBound
@@ -23,15 +23,6 @@ class ControlOptimizationWithoutPrediction:
         self.noise_constrs = None
         self.build_model()
         self.X = []
-
-        # 外界噪声生成器
-        self.sample_generator = NoiseGenerator
-        self.noise = deque([next(self.sample_generator) for _ in range(self.T)])
-
-        # 重新加载模型实例
-        self.loaded_model = LSTMModel(input_size=2, hidden_size=128, output_size=2, num_layers=3)
-        self.loaded_model.load_state_dict(torch.load('predictor_model.pth'))  # 加载模型权重
-        self.loaded_model.eval()  # 切换到评估模式
 
     def build_model(self):
         # 创建模型
@@ -62,11 +53,6 @@ class ControlOptimizationWithoutPrediction:
         self.model.getConstrByName("initial_x1").rhs = x1_0
         self.model.getConstrByName("initial_x2").rhs = x2_0
 
-        # 更新噪声约束
-        for t in range(self.T - 1):
-            self.noise_constrs[t][0].rhs += self.noise[t][0]  # 更新 x1 方程中的噪声
-            self.noise_constrs[t][1].rhs += self.noise[t][1]  # 更新 x2 方程中的噪声
-
         # 优化模型
         self.model.optimize()
         self.model.write('DoubleIntegratorWithNoise.lp')
@@ -77,13 +63,6 @@ class ControlOptimizationWithoutPrediction:
             self.X2 = [self.x2[t].X for t in range(self.T)]
             self.X.append([self.X1[0], self.X2[0]])
 
-            # 更新噪声约束
-            for t in range(self.T - 1):
-                self.noise_constrs[t][0].rhs -= self.noise[t][0]  # 更新 x1 方程中的噪声
-                self.noise_constrs[t][1].rhs -= self.noise[t][1]  # 更新 x2 方程中的噪声
-
-            self.noise.popleft()
-            self.noise.append(next(self.sample_generator))
             self.model.write('DoubleIntegratorWithNoise.lp')
 
         else:
@@ -100,34 +79,6 @@ class ControlOptimizationWithoutPrediction:
         plt.legend()
         plt.show()
 
-# if __name__ == "__main__":
-#     # 参数设置
-#     T = 10
-#     StateBound = GRB.INFINITY
-#     DecisionBound = 5
-#     x1_0 = 200.0
-#     x2_0 = -200.0
-#     optimizer = ControlOptimization(T, StateBound, DecisionBound, NoiseGenerator=noise())
-#     # 优化决策变量
-#     optimizer.optimize_control(x1_0, x2_0)
-#     print("Before x values [", optimizer.X1[0], optimizer.X2[0], "]\n", "Optimized u values:", optimizer.U[0],
-#           "\nAfter x values[", optimizer.X1[1], optimizer.X2[1], "]")
-#
-#     # while abs(optimizer.X1[1])>0.005 or abs(optimizer.X2[1])>0.005:
-#     for _ in range(1000):
-#         # 再次调用（无需重新构建模型）
-#         optimizer.optimize_control(optimizer.X1[1], optimizer.X2[1])
-#         print("Optimized u values:", optimizer.U[0], "\nAfter x values[", optimizer.X1[1], optimizer.X2[1], "]")
-#
-#     # 绘制 optimizer.X1 和 optimizer.X2 的折线图
-#     plt.figure(figsize=(10, 6))
-#     plt.plot([row[0] for row in optimizer.X], label='X1')
-#     plt.plot([row[1] for row in optimizer.X], label='X2')
-#     plt.xlabel('Time')
-#     plt.ylabel('State')
-#     plt.title('States changes of X1 and X2')
-#     plt.legend()
-#     plt.show()
 
 class ControlOptimizationWithPrediction:
     def __init__(self, T, StateBound, DecisionBound, NoiseGenerator):
@@ -258,7 +209,7 @@ if __name__ == "__main__":
     DecisionBound = 5
     x1_0 = 200.0
     x2_0 = -200.0
-    optimizer = ControlOptimizationWithoutPrediction(T, StateBound, DecisionBound, NoiseGenerator=noise(amplitude=5, std_dev=1))
+    optimizer = ControlOptimizationWithoutPrediction(T, StateBound, DecisionBound)
     # 优化决策变量
     optimizer.optimize_control(x1_0, x2_0)
     print("Before x values [", optimizer.X1[0], optimizer.X2[0], "]\n", "Optimized u values:", optimizer.U[0],

@@ -1,10 +1,6 @@
 from collections import deque
 import joblib, torch
 import numpy as np
-from sklearn.preprocessing import MinMaxScaler
-from torch.utils.data import DataLoader, Dataset
-from scipy.stats import truncnorm
-import torch.nn as nn
 import torch.optim as optim
 import matplotlib.pyplot as plt
 from PredictorTrainerLSTMPyTorch import LSTMNoisePredictor, LSTMModel
@@ -12,9 +8,9 @@ from PredictorTrainerLSTMPyTorch import LSTMNoisePredictor, LSTMModel
 loaded_model = LSTMModel(input_size=2, hidden_size=128, output_size=2, num_layers=3)
 loaded_model.load_state_dict(torch.load('predictor_model.pth'))  # 加载模型权重
 loaded_model.eval()  # 切换到评估模式
-# 如果需要恢复优化器（可选）
-optimizer = optim.Adam(loaded_model.parameters(), lr=0.001)
-optimizer.load_state_dict(torch.load('optimizer_state.pth'))
+# # 如果需要恢复优化器（可选）
+# optimizer = optim.Adam(loaded_model.parameters(), lr=0.001)
+# optimizer.load_state_dict(torch.load('optimizer_state.pth'))
 # 噪声生成器
 noise_generator = LSTMNoisePredictor.truncated_normal_generator(mean=[0, 0], std_dev=[0.1, 0.1], lower=[-1, -1],
                                                                 upper=[1, 1])
