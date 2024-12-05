@@ -8,7 +8,7 @@ from PredictorTrainerLSTMPyTorch import LSTMNoisePredictor, LSTMModel
 loaded_model = LSTMModel(input_size=2, hidden_size=128, output_size=2, num_layers=3)
 loaded_model.load_state_dict(torch.load('predictor_model.pth'))  # 加载模型权重
 loaded_model.eval()  # 切换到评估模式
-# # 如果需要恢复优化器（可选）
+# # 如果需要继续学习，可以恢复优化器（可选）
 # optimizer = optim.Adam(loaded_model.parameters(), lr=0.001)
 # optimizer.load_state_dict(torch.load('optimizer_state.pth'))
 # 噪声生成器
