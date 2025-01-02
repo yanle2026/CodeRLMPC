@@ -4,14 +4,22 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="664f2467-ce23-4814-a7d5-634c08a0c7ae" name="更改" comment="完成验证利用LSTM预测外界噪声能很好地提高RMPC的鲁棒性，开始添加learning">
-      <change afterPath="$PROJECT_DIR$/GenerateFeasibleTrajectory.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/PlotModule.py" afterDir="false" />
+    <list default="true" id="664f2467-ce23-4814-a7d5-634c08a0c7ae" name="更改" comment="完成LMPC算法并验证了该算法的优越性">
+      <change afterPath="$PROJECT_DIR$/RLMPCWithCSSAndPrediction.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/RLMPCWithRCSAndPrediction.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/DoubleIntegratorWithNoise.lp" beforeDir="false" afterPath="$PROJECT_DIR$/DoubleIntegratorWithNoise.lp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LoadModel.py" beforeDir="false" afterPath="$PROJECT_DIR$/LoadModel.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RLMPC.py" beforeDir="false" afterPath="$PROJECT_DIR$/RLMPC.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ErrorModel.lp" beforeDir="false" afterPath="$PROJECT_DIR$/ErrorModel.lp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LoadModel.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/LoadModel.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/RMPCWithoutLearning.py" beforeDir="false" afterPath="$PROJECT_DIR$/RMPC.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/WithoutLearningAndNoise.png" beforeDir="false" afterPath="$PROJECT_DIR$/source/WithoutLearningAndNoise.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/WithoutLearningAndPrediction.png" beforeDir="false" afterPath="$PROJECT_DIR$/source/WithoutLearningAndPrediction.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/WithoutLearningAndPredictionA5.png" beforeDir="false" afterPath="$PROJECT_DIR$/source/WithoutLearningAndPredictionA5.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/WithoutLearningButPredictionA5V1.png" beforeDir="false" afterPath="$PROJECT_DIR$/source/WithoutLearningButPredictionA5V1.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/RLMPCWithCPUPyTorch.yml" beforeDir="false" afterPath="$PROJECT_DIR$/source/RLMPCWithCPUPyTorch.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/RLMPCWithoutPyTorch.yml" beforeDir="false" afterPath="$PROJECT_DIR$/source/RLMPCWithoutPyTorch.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/手动验证TerminalQ是否正确.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/source/手动验证TerminalQ是否正确.xlsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,6 +62,8 @@
     "Python.GenerateFeasibleTrajectory.executor": "Run",
     "Python.PlotModule.executor": "Run",
     "Python.RLMPC.executor": "Run",
+    "Python.RLMPCWithCSSAndPrediction.executor": "Run",
+    "Python.RLMPCWithoutRCSButPrediction.executor": "Run",
     "Python.RMPCWithoutLearning.executor": "Run",
     "Python.test.executor": "Debug",
     "RunOnceActivity.ShowReadmeOnStart": "true",
@@ -72,6 +82,11 @@
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\pc\PyCharmProjects\CodeRLMPC" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\pc\PyCharmProjects\CodeRLMPC" />
+      <recent name="C:\Users\pc\PyCharmProjects\CodeRLMPC\source" />
+      <recent name="C:\Users\pc\PyCharmProjects\CodeRLMPC\test" />
     </key>
   </component>
   <component name="SharedIndexes">
@@ -98,7 +113,12 @@
       <workItem from="1733205636538" duration="35000" />
       <workItem from="1733205684205" duration="19228000" />
       <workItem from="1733288731141" duration="13460000" />
-      <workItem from="1733378948693" duration="10026000" />
+      <workItem from="1733378948693" duration="15865000" />
+      <workItem from="1733459919687" duration="1720000" />
+      <workItem from="1733461987223" duration="229000" />
+      <workItem from="1733462317329" duration="12890000" />
+      <workItem from="1735017172388" duration="652000" />
+      <workItem from="1735804523068" duration="4219000" />
     </task>
     <task id="LOCAL-00001" summary="使用LSTM直接预测一个正态分布效果不好，改为预测带截断正态分布噪声的正弦波">
       <option name="closed" value="true" />
@@ -116,7 +136,15 @@
       <option name="project" value="LOCAL" />
       <updated>1733204362167</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="完成LMPC算法并验证了该算法的优越性">
+      <option name="closed" value="true" />
+      <created>1733390096233</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1733390096233</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -125,19 +153,20 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="使用LSTM直接预测一个正态分布效果不好，改为预测带截断正态分布噪声的正弦波" />
     <MESSAGE value="完成验证利用LSTM预测外界噪声能很好地提高RMPC的鲁棒性，开始添加learning" />
-    <option name="LAST_COMMIT_MESSAGE" value="完成验证利用LSTM预测外界噪声能很好地提高RMPC的鲁棒性，开始添加learning" />
+    <MESSAGE value="完成LMPC算法并验证了该算法的优越性" />
+    <option name="LAST_COMMIT_MESSAGE" value="完成LMPC算法并验证了该算法的优越性" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/RMPCWithoutLearning.py</url>
+          <url>file://$PROJECT_DIR$/RMPC.py</url>
           <line>272</line>
           <option name="timeStamp" value="10" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/RLMPC.py</url>
-          <line>222</line>
+          <line>228</line>
           <option name="timeStamp" value="11" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -147,8 +176,8 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/test/test.py</url>
-          <line>20</line>
-          <option name="timeStamp" value="41" />
+          <line>19</line>
+          <option name="timeStamp" value="44" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -164,7 +193,9 @@
     <SUITE FILE_PATH="coverage/CodeRLMPC$RMPCWithoutLearning.coverage" NAME="RMPCWithoutLearning 覆盖结果" MODIFIED="1733209500787" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/CodeRLMPC$GenerateFeasibleTrajectory.coverage" NAME="GenerateFeasibleTrajectory 覆盖结果" MODIFIED="1733379574210" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/CodeRLMPC$PlotModule.coverage" NAME="PlotModule 覆盖结果" MODIFIED="1733212654225" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/CodeRLMPC$test.coverage" NAME="test 覆盖结果" MODIFIED="1733388605395" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
+    <SUITE FILE_PATH="coverage/CodeRLMPC$RLMPCWithCSSAndPrediction.coverage" NAME="RLMPCWithCSSAndPrediction 覆盖结果" MODIFIED="1735808216164" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/CodeRLMPC$RLMPC.coverage" NAME="RLMPC 覆盖结果" MODIFIED="1733389444427" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/CodeRLMPC$test.coverage" NAME="test 覆盖结果" MODIFIED="1733469618513" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
+    <SUITE FILE_PATH="coverage/CodeRLMPC$RLMPCWithoutRCSButPrediction.coverage" NAME="RLMPCWithoutRCSButPrediction 覆盖结果" MODIFIED="1735804527311" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

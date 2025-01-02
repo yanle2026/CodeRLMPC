@@ -1,32 +1,20 @@
-import gurobipy as gp
+height = [2,0,1,0,2,1,0,1,3,2,1,2,1]
+print(height.index(max(height)))
+a = height.index(max(height))
+height[a] = 0
+print(height)
+br = height.index(max(height[:a]))
+bl = height.index(max(height[a:]))
+sumbl = 0
+while True:
+    # 这里是 do-while 循环的循环体
+    # 执行你想要的操作
+    sumbl = sum(height[bl] - height[_] for _ in height[bl:a])
+    # 在循环体的末尾检查条件
+    # 如果条件不满足，则退出循环
+    if bl is 0:
+        break
 
-# 确保你的 .lp 文件路径是正确的
-lp_file_path = '../ErrorModel.lp'
 
-# 尝试加载模型并求解
-try:
-    # 加载 .lp 文件
-    m = gp.read(lp_file_path)
-
-    # 设置参数（如果需要）
-    # m.Params.method = 2  # 例如，设置求解器为 barrier 方法
-
-    # 求解模型
-    m.optimize()
-
-    # 输出结果
-    if m.status == gp.GRB.OPTIMAL:
-        print('Optimal objective value:', m.objVal)
-        for v in m.getVars():
-            print(f'{v.varName}: {v.x}')
-    else:
-        print(m.getConstrs())  # 查看所有约束
-        print(m.getVars())  # 查看所有变量
-
-        print('Optimization was stopped with status:', m.status)
-
-except gp.GurobiError as e:
-    print('Error code ' + str(e.errno) + ': ' + str(e))
-
-except AttributeError:
-    print('Encountered an attribute error')
+height[a] = 0
+print(height)

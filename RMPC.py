@@ -100,34 +100,6 @@ class ControlOptimizationWithoutPrediction:
         plt.legend()
         plt.show()
 
-# if __name__ == "__main__":
-#     # 参数设置
-#     T = 10
-#     StateBound = GRB.INFINITY
-#     DecisionBound = 5
-#     x1_0 = 200.0
-#     x2_0 = -200.0
-#     optimizer = ControlOptimization(T, StateBound, DecisionBound, NoiseGenerator=noise())
-#     # 优化决策变量
-#     optimizer.optimize_control(x1_0, x2_0)
-#     print("Before x values [", optimizer.X1[0], optimizer.X2[0], "]\n", "Optimized u values:", optimizer.U[0],
-#           "\nAfter x values[", optimizer.X1[1], optimizer.X2[1], "]")
-#
-#     # while abs(optimizer.X1[1])>0.005 or abs(optimizer.X2[1])>0.005:
-#     for _ in range(1000):
-#         # 再次调用（无需重新构建模型）
-#         optimizer.optimize_control(optimizer.X1[1], optimizer.X2[1])
-#         print("Optimized u values:", optimizer.U[0], "\nAfter x values[", optimizer.X1[1], optimizer.X2[1], "]")
-#
-#     # 绘制 optimizer.X1 和 optimizer.X2 的折线图
-#     plt.figure(figsize=(10, 6))
-#     plt.plot([row[0] for row in optimizer.X], label='X1')
-#     plt.plot([row[1] for row in optimizer.X], label='X2')
-#     plt.xlabel('Time')
-#     plt.ylabel('State')
-#     plt.title('States changes of X1 and X2')
-#     plt.legend()
-#     plt.show()
 
 class ControlOptimizationWithPrediction:
     def __init__(self, T, StateBound, DecisionBound, NoiseGenerator):

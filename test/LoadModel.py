@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from PredictorTrainerLSTMPyTorch import LSTMNoisePredictor, LSTMModel
 # 重新创建模型实例
 loaded_model = LSTMModel(input_size=2, hidden_size=128, output_size=2, num_layers=3)
-loaded_model.load_state_dict(torch.load('predictor_model.pth'))  # 加载模型权重
+loaded_model.load_state_dict(torch.load('../predictor_model.pth'))  # 加载模型权重
 loaded_model.eval()  # 切换到评估模式
 # # 如果需要继续学习，可以恢复优化器（可选）
 # optimizer = optim.Adam(loaded_model.parameters(), lr=0.001)
@@ -20,7 +20,7 @@ noise = np.array([next(noise_generator) for _ in range(10)])
 
 # 数据归一化（确保使用相同的 scaler）
 # 加载 scaler
-scaler = joblib.load('scaler.pkl')
+scaler = joblib.load('../scaler.pkl')
 
 for i in range(100):
     history_scaled = scaler.transform(noise)
